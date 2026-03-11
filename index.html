@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Editorial Submission</title>
+
+<style>
+body{
+font-family:Arial;
+max-width:900px;
+margin:auto;
+padding:20px;
+}
+
+label{
+font-weight:bold;
+}
+
+input,select,textarea{
+width:100%;
+margin-top:5px;
+margin-bottom:15px;
+padding:8px;
+}
+
+#preview{
+background:#f5f5f5;
+padding:15px;
+white-space:pre;
+overflow:auto;
+}
+
+.imageBlock{
+border:1px solid #ccc;
+padding:10px;
+margin-bottom:10px;
+}
+
+button{
+margin-top:10px;
+padding:10px 15px;
+}
+</style>
+
+</head>
+
+<body>
+
+<h2>Editorial Submission</h2>
+
+<form id="form">
+
+<label>Publication</label>
+<select id="publication" onchange="updateCategories()">
+<option>TN</option>
+<option>BP</option>
+<option>CP</option>
+<option>EP</option>
+<option>NH</option>
+<option>NW</option>
+<option>PP</option>
+<option>SP</option>
+<option>WC</option>
+<option>Focus</option>
+</select>
+
+<label>Category</label>
+<select id="category"></select>
+
+<label>Headline</label>
+<input id="headline">
+
+<label>Subheadline</label>
+<input id="subheadline">
+
+<label>Slug</label>
+<input id="slug">
+
+<label>Byline</label>
+<input id="byline">
+
+<label>Author Email Address</label>
+<input id="email">
+
+<label>Priority</label>
+<select id="priority">
+<option value="1">High</option>
+<option value="2">Normal</option>
+<option value="3">Low</option>
+</select>
+
+<label>Article Body</label>
+<textarea id="body" rows="12"></textarea>
+
+<label>Upload Images</label>
+<input type="file" id="images" multiple>
+
+<div id="imageMeta"></div>
+
+<button type="button" onclick="generateOutput()">Preview Output</button>
+<button type="button" onclick="downloadZip()">Download Submission</button>
+
+</form>
+
+<h3>Preview</h3>
+<pre id="preview"></pre>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+<script>
+
+const tnCategories=[
+"TN Announcements",
+"TN Court News",
+"TN Lifestyles",
+"TN News",
+"TN Police Logs",
+"TN Sports"
+];
+
+const lvpCategories=[
+"LVP Business Showcase",
+"LVP College Corner",
+"LVP Columns",
+"LVP Focus",
+"LVP News",
+"LVP News Briefs",
+"LVP Police Logs",
+"LVP School News",
+"LVP Social News",
+"LVP Sports"
+];
+
+function updateCategories(){
+
+let pub=document.getElementById("publication").value;
+let categorySelect=document.getElementById("category");
+
+categorySelect.innerHTML="";
+
+let list=(pub==="TN") ? tnCategories : lvpCategories;
+
+list.forEach(cat=>{
+let option=document.createElement("option");
+option.text=cat;
+categorySelect.add(option);
+});
+
+}
+
+updateCategories();
+
+let files=[];
+
+document.getElementById("images").addEventListener("change",function(){
+
+files=[...this.files];
+
+let container=document.getElementById("imageMeta");
+
+container.innerHTML="";
+
+files.forEach((file,i)=>{
+
+container.innerHTML+=`
+
+<div class="imageBlock">
+
+<b>${file.name}</b><br>
+
+Caption:
+<input id="caption${i}">
+
+</div>
+
+`;
+
+});
+
+});
+
+let outputText="";
+
+function generateOutput(){
+
+let created=new Date().toISOString();
+
+let publication=document.getElementById("publication").value;
+let category=document.getElementById("category").value;
+let headline=document.getElementById("headline").value;
+let subheadline=document.getElementById("subheadline").value;
+let slug=document.getElementById("slug").value;
+let byline=document.getElementById("byline").value;
+let email=document.getElementById("email").value;
+let priority=document.getElementById("priority").value;
+let body=document.getElementById("body").value;
+
+let imagesXML="";
+
+files.forEach((file,i)=>{
+
+let caption=document.getElementById("caption"+i).value;
+
+imagesXML+=`
+<image>
+<filename>${file.name}</filename>
+<caption>${caption}</caption>
+</image>
+`;
+
+});
+
+outputText=
+`<created>${created}</created>
+<publication>${publication}</publication>
+<category>${category}</category>
+<headline>${headline}</headline>
+<subheadline>${subheadline}</subheadline>
+<slug>${slug}</slug>
+<byline>${byline}</byline>
+<email>${email}</email>
+<priority>${priority}</priority>
+<body>
+${body}
+</body>
+
+${imagesXML}`;
+
+document.getElementById("preview").textContent=outputText;
+
+}
+
+async function downloadZip(){
+
+if(!outputText){
+
+alert("Generate preview first");
+return;
+
+}
+
+let zip=new JSZip();
+
+zip.file("submission.txt",outputText);
+
+files.forEach(file=>{
+zip.file(file.name,file);
+});
+
+let content=await zip.generateAsync({type:"blob"});
+
+let a=document.createElement("a");
+
+a.href=URL.createObjectURL(content);
+a.download="submission.zip";
+a.click();
+
+}
+
+</script>
+
+</body>
+</html>
