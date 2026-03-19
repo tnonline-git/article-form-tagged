@@ -1,263 +1,494 @@
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<title>Editorial Submission</title>
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Editorial Submission</title><style>
+  :root {
+    color-scheme: light;
+  }
 
+  body {
+    font-family: Arial, sans-serif;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 24px;
+    line-height: 1.4;
+  }
+
+  h1, h2, h3, p {
+    margin-top: 0;
+  }
+
+  .intro {
+    margin-bottom:10px;
+    color: #333;
+  }
+
+  form {
+    display: grid;
+    gap: 14px;
+  }
+
+  .field {
+    display: grid;
+    gap: 6px;
+  }
+
+  .required-note {
+    color: #555;
+    font-size: 0.95rem;
+  }
+
+  label {
+    font-weight: 700;
+  }
+
+  input,
+  select,
+  textarea,
+  button {
+    font: inherit;
+  }
+
+  input,
+  select,
+  textarea { margin-top:0 !important; 
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px;
+  }
+
+  textarea { margin-top:0 !important; 
+    resize: vertical;
+  }
+
+  .actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 6px;
+  }
+
+  button {
+    padding: 10px 16px;
+    cursor: pointer;
+  }
+
+  .help {
+    font-size: 0.92rem;
+    color: #555;
+  }
+
+  .error-box,
+  .success-box {
+    padding: 12px;
+    border-radius: 4px;
+    display: none;
+  }
+
+  .error-box {
+    background: #fff1f1;
+    border: 1px solid #d99;
+    color: #7a1f1f;
+  }
+
+  .success-box {
+    background: #f1fff4;
+    border: 1px solid #8bbf97;
+    color: #175c28;
+  }
+
+  .image-block {
+    border: 1px solid #ccc;
+    padding: 12px;
+    border-radius: 4px;
+    margin-bottom: 10px;
+  }
+
+  .image-block h4 {
+    margin: 0 0 8px;
+    font-size: 1rem;
+  }
+
+  #preview {
+    background: #f5f5f5;
+    padding: 15px;
+    white-space: pre-wrap;
+    overflow: auto;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    min-height: 120px;
+  }
+</style>
 <style>
-body{
-font-family:Arial;
-max-width:900px;
-margin:auto;
-padding:20px;
-}
-
-label{
-font-weight:bold;
-}
-
-input,select,textarea{
-width:100%;
-margin-top:5px;
-margin-bottom:15px;
-padding:8px;
-}
-
-#preview{
-background:#f5f5f5;
-padding:15px;
-white-space:pre;
-overflow:auto;
-}
-
-.imageBlock{
-border:1px solid #ccc;
-padding:10px;
-margin-bottom:10px;
-}
-
-button{
-margin-top:10px;
-padding:10px 15px;
-}
+textarea { margin-top:0 !important;  margin-top: 0 !important; }
+label { margin-bottom: 4px; display:block; }
 </style>
 
-</head>
 
-<body>
-
-<h2>Editorial Submission</h2>
-
-<form id="form">
-
-<label>Publication</label>
-<select id="publication" onchange="updateCategories()">
-<option>TN</option>
-<option>BP</option>
-<option>CP</option>
-<option>EP</option>
-<option>NH</option>
-<option>NW</option>
-<option>PP</option>
-<option>SP</option>
-<option>WC</option>
-<option>Focus</option>
-</select>
-
-<label>Category</label>
-<select id="category"></select>
-
-<label>Headline</label>
-<input id="headline">
-
-<label>Subheadline</label>
-<input id="subheadline">
-
-<label>Slug</label>
-<input id="slug">
-
-<label>Byline</label>
-<input id="byline">
-
-<label>Author Email Address</label>
-<input id="email">
-
-<label>Priority</label>
-<select id="priority">
-<option value="1">High</option>
-<option value="2">Normal</option>
-<option value="3">Low</option>
-</select>
-
-<label>Article Body</label>
-<textarea id="body" rows="12"></textarea>
-
-<label>Upload Images</label>
-<input type="file" id="images" multiple>
-
-<div id="imageMeta"></div>
-
-<button type="button" onclick="generateOutput()">Preview Output</button>
-<button type="button" onclick="downloadZip()">Download Submission</button>
-
-</form>
-
-<h3>Preview</h3>
-<pre id="preview"></pre>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-
-<script>
-
-const tnCategories=[
-"TN Announcements",
-"TN Court News",
-"TN Lifestyles",
-"TN News",
-"TN Police Logs",
-"TN Sports"
-];
-
-const lvpCategories=[
-"LVP Business Showcase",
-"LVP College Corner",
-"LVP Columns",
-"LVP Focus",
-"LVP News",
-"LVP News Briefs",
-"LVP Police Logs",
-"LVP School News",
-"LVP Social News",
-"LVP Sports"
-];
-
-function updateCategories(){
-
-let pub=document.getElementById("publication").value;
-let categorySelect=document.getElementById("category");
-
-categorySelect.innerHTML="";
-
-let list=(pub==="TN") ? tnCategories : lvpCategories;
-
-list.forEach(cat=>{
-let option=document.createElement("option");
-option.text=cat;
-categorySelect.add(option);
-});
-
-}
-
-updateCategories();
-
-let files=[];
-
-document.getElementById("images").addEventListener("change",function(){
-
-files=[...this.files];
-
-let container=document.getElementById("imageMeta");
-
-container.innerHTML="";
-
-files.forEach((file,i)=>{
-
-container.innerHTML+=`
-
-<div class="imageBlock">
-
-<b>${file.name}</b><br>
-
-Caption:
-<input id="caption${i}">
-
-</div>
-
-`;
-
-});
-
-});
-
-let outputText="";
-
-function generateOutput(){
-
-let created=new Date().toISOString();
-
-let publication=document.getElementById("publication").value;
-let category=document.getElementById("category").value;
-let headline=document.getElementById("headline").value;
-let subheadline=document.getElementById("subheadline").value;
-let slug=document.getElementById("slug").value;
-let byline=document.getElementById("byline").value;
-let email=document.getElementById("email").value;
-let priority=document.getElementById("priority").value;
-let body=document.getElementById("body").value;
-
-let imagesXML="";
-
-files.forEach((file,i)=>{
-
-let caption=document.getElementById("caption"+i).value;
-
-imagesXML+=`
-<image>
-<filename>${file.name}</filename>
-<caption>${caption}</caption>
-</image>
-`;
-
-});
-
-outputText=
-`<created>${created}</created>
-<publication>${publication}</publication>
-<category>${category}</category>
-<headline>${headline}</headline>
-<subheadline>${subheadline}</subheadline>
-<slug>${slug}</slug>
-<byline>${byline}</byline>
-<email>${email}</email>
-<priority>${priority}</priority>
-<body>
-${body}
-</body>
-
-${imagesXML}`;
-
-document.getElementById("preview").textContent=outputText;
-
-}
-
-async function downloadZip(){
-
-if(!outputText){
-
-alert("Generate preview first");
-return;
-
-}
-
-let zip=new JSZip();
-
-zip.file("submission.txt",outputText);
-
-files.forEach(file=>{
-zip.file(file.name,file);
-});
-
-let content=await zip.generateAsync({type:"blob"});
-
-let a=document.createElement("a");
-
-a.href=URL.createObjectURL(content);
-a.download="submission.zip";
-a.click();
-
-}
-
-</script>
-
-</body>
-</html>
+<style>
+.field { margin-bottom: 12px; }
+.field label { display: block; margin-bottom: 4px; }
+.field textarea,
+.field input,
+.field select { margin-top: 0; }
+</style>
+
+</head><body><header style="text-align:center; padding:20px 0; border-bottom:1px solid #ccc; margin-bottom:10px;"><img src="TN Logo.png" alt="Times News Logo" style="max-width:360px; height:auto;"></header><h1>Editorial Submission</h1><p class="intro">Create a submission package with article metadata and optional images.</p><p class="required-note">Fields marked with * are required. Required fields: slug, byline, author email address, and article body.</p><div id="errorBox" class="error-box" role="alert" aria-live="assertive"></div><div id="successBox" class="success-box" role="status" aria-live="polite"></div><form id="submissionForm" novalidate><div class="field"><label for="publication">Publication</label><select id="publication" name="publication"></select></div><div class="field"><label for="category">Category</label><select id="category" name="category"></select></div><div class="field"><label for="headline">Headline</label><input id="headline" name="headline" type="text" autocomplete="off"></div><div class="field"><label for="subheadline">Subheadline</label><input id="subheadline" name="subheadline" type="text" autocomplete="off"></div><div class="field"><label for="slug">Slug *</label><input id="slug" name="slug" type="text" required autocomplete="off" aria-required="true"></div><div class="field"><label for="byline">Byline *</label><input id="byline" name="byline" type="text" required autocomplete="off" aria-required="true"></div><div class="field"><label for="email">Author Email Address *</label><input id="email" name="email" type="email" required autocomplete="email" aria-required="true"></div><div class="field"><label for="body">Article Body *</label><textarea id="body" name="body" rows="12" required aria-required="true"></textarea><div class="help">Paste the full article text here.</div></div><div class="field"><label for="images">Upload Images</label><input type="file" id="images" name="images" multiple accept="image/*"><div class="help">If you add images, each image caption is required.</div></div><div id="imageMeta" aria-live="polite"></div><div class="actions"><button type="button" id="previewButton">Preview Output</button><button type="button" id="downloadButton">Download Submission</button></div></form><h2>Preview</h2><pre id="preview"></pre><script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script><script>
+    const publicationCategoryMap = {
+      TN: [
+        "TN Court News",
+        "TN Lifestyles",
+        "TN News",
+        "TN Police Logs",
+        "TN Sports"
+      ],
+      BP: [
+        "LVP Business Showcase",
+        "LVP College Corner",
+        "LVP Columns",
+        "LVP Focus",
+        "LVP News",
+        "LVP News Briefs",
+        "LVP Police Logs",
+        "LVP School News",
+        "LVP Social News",
+        "LVP Sports"
+      ],
+      CP: [
+        "LVP Business Showcase",
+        "LVP College Corner",
+        "LVP Columns",
+        "LVP Focus",
+        "LVP News",
+        "LVP News Briefs",
+        "LVP Police Logs",
+        "LVP School News",
+        "LVP Social News",
+        "LVP Sports"
+      ],
+      EP: [
+        "LVP Business Showcase",
+        "LVP College Corner",
+        "LVP Columns",
+        "LVP Focus",
+        "LVP News",
+        "LVP News Briefs",
+        "LVP Police Logs",
+        "LVP School News",
+        "LVP Social News",
+        "LVP Sports"
+      ],
+      NH: [
+        "LVP Business Showcase",
+        "LVP College Corner",
+        "LVP Columns",
+        "LVP Focus",
+        "LVP News",
+        "LVP News Briefs",
+        "LVP Police Logs",
+        "LVP School News",
+        "LVP Social News",
+        "LVP Sports"
+      ],
+      NW: [
+        "LVP Business Showcase",
+        "LVP College Corner",
+        "LVP Columns",
+        "LVP Focus",
+        "LVP News",
+        "LVP News Briefs",
+        "LVP Police Logs",
+        "LVP School News",
+        "LVP Social News",
+        "LVP Sports"
+      ],
+      PP: [
+        "LVP Business Showcase",
+        "LVP College Corner",
+        "LVP Columns",
+        "LVP Focus",
+        "LVP News",
+        "LVP News Briefs",
+        "LVP Police Logs",
+        "LVP School News",
+        "LVP Social News",
+        "LVP Sports"
+      ],
+      SP: [
+        "LVP Business Showcase",
+        "LVP College Corner",
+        "LVP Columns",
+        "LVP Focus",
+        "LVP News",
+        "LVP News Briefs",
+        "LVP Police Logs",
+        "LVP School News",
+        "LVP Social News",
+        "LVP Sports"
+      ],
+      WC: [
+        "LVP Business Showcase",
+        "LVP College Corner",
+        "LVP Columns",
+        "LVP Focus",
+        "LVP News",
+        "LVP News Briefs",
+        "LVP Police Logs",
+        "LVP School News",
+        "LVP Social News",
+        "LVP Sports"
+      ],
+      Focus: [
+        "LVP Business Showcase",
+        "LVP College Corner",
+        "LVP Columns",
+        "LVP Focus",
+        "LVP News",
+        "LVP News Briefs",
+        "LVP Police Logs",
+        "LVP School News",
+        "LVP Social News",
+        "LVP Sports"
+      ]
+    };
+
+    const publicationSelect = document.getElementById("publication");
+    const categorySelect = document.getElementById("category");
+    const imageInput = document.getElementById("images");
+    const imageMetaContainer = document.getElementById("imageMeta");
+    const previewElement = document.getElementById("preview");
+    const errorBox = document.getElementById("errorBox");
+    const successBox = document.getElementById("successBox");
+    const form = document.getElementById("submissionForm");
+
+    let selectedFiles = [];
+
+    function parseByline(byline) {
+      return byline
+        .split(/\s*(?:,|&| and )\s*/i)
+        .map(name => name.trim())
+        .filter(Boolean)
+        .map(name => ({ name }));
+    }
+
+    function buildSubmissionJson(data) {
+      return {
+        created: data.created,
+        publication: data.publication,
+        category: data.category,
+        headline: data.headline,
+        subHeadline: data.subheadline,
+        slug: data.slug,
+        byline: data.byline,
+        authorEmail: data.email,
+        authors: parseByline(data.byline),
+        body: data.body,
+        images: data.images.map(image => ({
+          filename: image.file.name,
+          caption: image.caption
+        }))
+      };
+    }
+
+    function showError(messages) {
+      const list = Array.isArray(messages) ? messages : [messages];
+      errorBox.innerHTML = list.map(message => `<div>${message}</div>`).join("");
+      errorBox.style.display = "block";
+      successBox.style.display = "none";
+    }
+
+    function showSuccess(message) {
+      successBox.textContent = message;
+      successBox.style.display = "block";
+      errorBox.style.display = "none";
+    }
+
+    function clearMessages() {
+      errorBox.style.display = "none";
+      successBox.style.display = "none";
+      errorBox.textContent = "";
+      successBox.textContent = "";
+    }
+
+    function populatePublications() {
+      Object.keys(publicationCategoryMap).forEach(publication => {
+        const option = document.createElement("option");
+        option.value = publication;
+        option.textContent = publication;
+        publicationSelect.appendChild(option);
+      });
+    }
+
+    function updateCategories() {
+      const publication = publicationSelect.value;
+      const categories = publicationCategoryMap[publication] || [];
+
+      categorySelect.innerHTML = "";
+
+      categories.forEach(category => {
+        const option = document.createElement("option");
+        option.value = category;
+        option.textContent = category;
+        if (publication === "TN" && category === "TN News") {
+          option.selected = true;
+        }
+        categorySelect.appendChild(option);
+      });
+
+      if (publication === "TN") {
+        categorySelect.value = "TN News";
+      }
+    }
+
+    function renderImageCaptionFields(files) {
+      imageMetaContainer.innerHTML = "";
+
+      files.forEach((file, index) => {
+        const block = document.createElement("div");
+        block.className = "image-block";
+
+        const heading = document.createElement("h4");
+        heading.textContent = file.name;
+
+        const label = document.createElement("label");
+        const inputId = `caption-${index}`;
+        label.setAttribute("for", inputId);
+        label.textContent = "Caption";
+
+        const input = document.createElement("input");
+        input.type = "text";
+        input.id = inputId;
+        input.name = inputId;
+        input.autocomplete = "off";
+        input.required = true;
+
+        block.appendChild(heading);
+        block.appendChild(label);
+        block.appendChild(input);
+        imageMetaContainer.appendChild(block);
+      });
+    }
+
+    function getImageData() {
+      return selectedFiles.map((file, index) => {
+        const captionInput = document.getElementById(`caption-${index}`);
+        return {
+          file,
+          caption: captionInput ? captionInput.value.trim() : ""
+        };
+      });
+    }
+
+    function getFormData() {
+      return {
+        created: new Date().toISOString(),
+        publication: publicationSelect.value,
+        category: categorySelect.value,
+        headline: document.getElementById("headline").value.trim(),
+        subheadline: document.getElementById("subheadline").value.trim(),
+        slug: document.getElementById("slug").value.trim(),
+        byline: document.getElementById("byline").value.trim(),
+        email: document.getElementById("email").value.trim(),
+        body: document.getElementById("body").value.trim(),
+        images: getImageData()
+      };
+    }
+
+    function validateData(data) {
+      const errors = [];
+
+      if (!data.slug) {
+        errors.push("Slug is required.");
+      }
+
+      if (!data.byline) {
+        errors.push("Byline is required.");
+      }
+
+      if (!data.email) {
+        errors.push("Author email address is required.");
+      } else {
+        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailPattern.test(data.email)) {
+          errors.push("Author email address must be a valid email.");
+        }
+      }
+
+      if (!data.body) {
+        errors.push("Article body is required.");
+      }
+
+      data.images.forEach((image, index) => {
+        if (!image.caption) {
+          errors.push(`Caption is required for image ${index + 1} (${image.file.name}).`);
+        }
+      });
+
+      return errors;
+    }
+
+    function buildSubmissionText(data) {
+      const submissionJson = buildSubmissionJson(data);
+      return JSON.stringify(submissionJson, null, 2);
+    }
+
+    function generateOutput() {
+      clearMessages();
+
+      const data = getFormData();
+      const errors = validateData(data);
+
+      if (errors.length > 0) {
+        previewElement.textContent = "";
+        showError(errors);
+        return null;
+      }
+
+      const outputText = buildSubmissionText(data);
+      previewElement.textContent = outputText;
+      showSuccess("JSON preview generated successfully.");
+      return { data, outputText };
+    }
+
+    async function downloadZip() {
+      const result = generateOutput();
+
+      if (!result) {
+        return;
+      }
+
+      const zip = new JSZip();
+      zip.file("submission.json", result.outputText);
+
+      result.data.images.forEach(image => {
+        zip.file(image.file.name, image.file);
+      });
+
+      const content = await zip.generateAsync({ type: "blob" });
+      const objectUrl = URL.createObjectURL(content);
+
+      try {
+        const link = document.createElement("a");
+        link.href = objectUrl;
+        link.download = "submission.zip";
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        showSuccess("Submission ZIP with JSON downloaded successfully.");
+      } finally {
+        URL.revokeObjectURL(objectUrl);
+      }
+    }
+
+    publicationSelect.addEventListener("change", updateCategories);
+
+    imageInput.addEventListener("change", event => {
+      selectedFiles = Array.from(event.target.files || []);
+      renderImageCaptionFields(selectedFiles);
+      clearMessages();
+    });
+
+    document.getElementById("previewButton").addEventListener("click", generateOutput);
+    document.getElementById("downloadButton").addEventListener("click", downloadZip);
+
+    populatePublications();
+    publicationSelect.value = "TN";
+    updateCategories();
+  </script></body></html>
