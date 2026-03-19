@@ -271,7 +271,9 @@ label { margin-bottom: 4px; display:block; }
     function buildSubmissionJson(data) {
       return {
         created: data.created,
-        publication: data.publication,
+        publication: [data.publication, "TNO-E"],
+        saxoauthor: "System Administrator",
+        status: "Imported",
         category: data.category,
         headline: data.headline,
         subHeadline: data.subheadline,
