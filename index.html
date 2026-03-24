@@ -14,7 +14,7 @@ padding:20px;
 
 .logo{
 text-align:center;
-margin-bottom:20px;
+margin-bottom:10px;
 }
 
 .logo img{
@@ -22,8 +22,23 @@ max-width:400px;
 height:auto;
 }
 
+.header-line{
+border-bottom:1px solid #ccc;
+margin-bottom:20px;
+}
+
+.description{
+margin-bottom:20px;
+color:#555;
+}
+
 label{
 font-weight:bold;
+}
+
+.required::after{
+content:" *";
+color:red;
 }
 
 input,select,textarea{
@@ -60,7 +75,14 @@ padding:10px 15px;
 <img src="TN Logo.png" alt="Times News Logo">
 </div>
 
+<div class="header-line"></div>
+
 <h2>Editorial Submission</h2>
+
+<div class="description">
+Create a submission package with article metadata and optional images.<br>
+Fields marked with * are required. Required fields: slug, byline, author email address, and article body.
+</div>
 
 <form id="form">
 
@@ -87,17 +109,17 @@ padding:10px 15px;
 <label>Subheadline</label>
 <input id="subheadline">
 
-<label>Slug</label>
-<input id="slug">
+<label class="required">Slug</label>
+<input id="slug" required>
 
-<label>Byline</label>
-<input id="byline">
+<label class="required">Byline</label>
+<input id="byline" required>
 
-<label>Author Email Address</label>
-<input id="email">
+<label class="required">Author Email Address</label>
+<input id="email" required>
 
-<label>Article Body</label>
-<textarea id="body" rows="12"></textarea>
+<label class="required">Article Body</label>
+<textarea id="body" rows="12" required></textarea>
 
 <label>Upload Images</label>
 <input type="file" id="images" multiple>
@@ -188,7 +210,41 @@ Caption:
 
 let outputText="";
 
+function validateRequired(){
+
+let slug=document.getElementById("slug").value.trim();
+let byline=document.getElementById("byline").value.trim();
+let email=document.getElementById("email").value.trim();
+let body=document.getElementById("body").value.trim();
+
+if(!slug || !byline || !email || !body){
+alert("Please fill in all required fields: slug, byline, author email address, and article body.");
+return false;
+}
+
+// NEW: Validate captions if images exist
+if(files.length > 0){
+
+for(let i=0; i<files.length; i++){
+
+let caption=document.getElementById("caption"+i).value.trim();
+
+if(!caption){
+alert("All uploaded images must include a caption.");
+return false;
+}
+
+}
+
+}
+
+return true;
+
+}
+
 function generateOutput(){
+
+if(!validateRequired()) return;
 
 let created=new Date().toISOString();
 
@@ -237,11 +293,11 @@ document.getElementById("preview").textContent=outputText;
 
 async function downloadZip(){
 
-if(!outputText){
+if(!validateRequired()) return;
 
+if(!outputText){
 alert("Generate preview first");
 return;
-
 }
 
 let zip=new JSZip();
